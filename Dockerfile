@@ -20,6 +20,8 @@ ENV BPMS_DEPLOYABLE=jboss-bpmsuite-$BPMS_VERSION_MAJOR.$BPMS_VERSION_MINOR.$BPMS
 ENV EAP_PATCH=jboss-eap-7.0.5-patch.zip
 ENV BPMS_PATCH_WILDCARD=jboss-bpmsuite-6.4.?-*
 
+ENV M2_HOME=/opt/jboss/.m2
+
 # ADD Installation and Management Files
 COPY support/installation-eap support/installation-eap.variables support/standalone.xml support/userinfo.properties installs/*.zip installs/*.jar /opt/jboss/
 
@@ -29,6 +31,7 @@ USER 1000
 
 # Prepare and run installer and cleanup installation components
 RUN sed -i "s:<installpath>.*</installpath>:<installpath>$BPMS_HOME</installpath>:" /opt/jboss/installation-eap && \
+    sed -i "s:<profiles>:<localRepository>$M2_HOME/repository</localRepository>\n<profiles>:" $M2_HOME/settings.xml && \
     java -jar /opt/jboss/$EAP_INSTALLER  /opt/jboss/installation-eap -variablefile /opt/jboss/installation-eap.variables && \ 
     if [ -e /opt/jboss/$EAP_PATCH ]; then $BPMS_HOME/bin/jboss-cli.sh --commands=patch\ apply\ /opt/jboss/$EAP_PATCH\ --override-all; fi && \
     unzip -qo /opt/jboss/$BPMS_DEPLOYABLE  -d $BPMS_HOME/.. && \
@@ -40,10 +43,14 @@ RUN sed -i "s:<installpath>.*</installpath>:<installpath>$BPMS_HOME</installpath
     mv /opt/jboss/userinfo.properties $BPMS_HOME/standalone/deployments/business-central.war/WEB-INF/classes/ && \
     rm -rf /opt/jboss/$BPMS_DEPLOYABLE /opt/jboss/$EAP_INSTALLER /opt/jboss/installation-eap /opt/jboss/installation-eap.variables $BPMS_HOME/standalone/configuration/standalone_xml_history/ && \
     rm -rf /opt/jboss/$EAP_PATCH /opt/jboss/$BPMS_PATCH_WILDCARD && \
-    $BPMS_HOME/bin/add-user.sh -a -u bpmsAdmin -p BPMs3cr3t --role admin,developer,analyst,user,manager,kie-server,rest-all,Administrators
-
+    $BPMS_HOME/bin/add-user.sh -a -u bpmsAdmin -p BPMs3cr3t --role admin,developer,analyst,user,manager,kie-server,rest-all,Administrators && \
+    sudo chgrp -R 0 /opt/jboss/* && \
+    sudo chmod -R g+rw /opt/jboss/* && \
+    sudo chgrp -R 0 $M2_HOME && \
+    sudo chmod -R g+rw $M2_HOME
+    
 # Extra users
-# RUN $BPMS_HOME/bin/add-user.sh -a -u user,casehandler1 -p BPMs3cr3t --role casehandler
+RUN $BPMS_HOME/bin/add-user.sh -a -u user,casehandler1 -p BPMs3cr3t --role casehandler
 
 # Expose Ports
 EXPOSE 9990 9999 8080 9418 8001

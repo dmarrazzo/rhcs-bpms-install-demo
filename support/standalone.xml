@@ -31,6 +31,7 @@
    </extensions>
    <system-properties>
       <property name="org.kie.example" value="false"/>
+      <property name="kie.maven.settings.custom" value="/opt/jboss/.m2/settings.xml"/>
       <property name="org.jbpm.designer.perspective" value="full"/>
       <property name="designerdataobjects" value="false"/>
       <property name="org.uberfire.nio.git.dir" value="${jboss.home.dir}/bin"/>
