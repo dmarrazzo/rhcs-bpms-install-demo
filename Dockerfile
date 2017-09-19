@@ -50,7 +50,7 @@ RUN sed -i "s:<installpath>.*</installpath>:<installpath>$BPMS_HOME</installpath
     sudo chmod -R g+rw $M2_HOME
     
 # Extra users
-RUN $BPMS_HOME/bin/add-user.sh -a -u user,casehandler1 -p BPMs3cr3t --role casehandler
+RUN $BPMS_HOME/bin/add-user.sh -a -u casehandler1 -p BPMs3cr3t --role user,casehandler
 
 # Expose Ports
 EXPOSE 9990 9999 8080 9418 8001
